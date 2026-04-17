@@ -16,17 +16,11 @@ def load_data():
         print("Connection successful!")
 
         tables = [
-            ("data/tracks_information.csv", "TRACKS"),
-            ("data/loudness_information.csv", "LOUDNESS"),
-            ("data/dancebility_information.csv", "DANCEBILITY"),
-            ("data/musicallity_information.csv", "MUSICALLITY"),
-            ("data/artists_information.csv", "ARTISTS"),
-            ("data/rhythm_information.csv", "RHYTHM"),
-            ("data/statistics_information.csv", "STATS"),
-            ("data/keys_information.csv", "TRACKKEYS"),
-            ("data/tempo_information.csv", "TEMPO"),
-            ("data/production_information.csv", "PRODUCTION"),
-            ("data/listenability_information.csv", "LISTENABILITY")
+            ("data/genres.csv", "GENRES"),
+            ("data/artists.csv", "ARTISTS"),
+            ("data/tracks.csv", "TRACKS"),
+            ("data/production.csv", "PRODUCTION"),
+            ("data/songattributes.csv", "SONGATTRIBUTES")
         ]
 
         for csv_file, table_name in tables:
@@ -39,7 +33,8 @@ def load_data():
     except Exception as e:
         print(f"Error: {e}")
     finally:
-        engine.dispose()
+        if 'engine' in locals():
+            engine.dispose()
 
 if __name__ == "__main__":
     load_data()
