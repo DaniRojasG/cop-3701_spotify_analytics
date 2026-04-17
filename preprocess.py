@@ -15,7 +15,7 @@ def init_mariadb():
 
     try:
         print("Connecting to MariaDB...")
-        conn = mariadb.connect(**db_config) 
+        conn = mariadb.connect(**db_config)
         print("Connection successful!")
         cursor = conn.cursor()
     except:
@@ -35,7 +35,7 @@ def loop():
             continue
         current_operation = int(current_operation)
         MD_RUN = False
-    
+
 def create_db():
     with open("./create_db.sql", 'r') as file:
         sql_script = file.read().split(";")
@@ -50,54 +50,58 @@ def create_db():
 def csv_create_tables():
     input_file = "data/SpotifyFeatures.csv"
 
+
     df: pd.DataFrame = pd.read_csv(input_file)
 
-    tracks_master = df[['track_name', 'artist_name']].drop_duplicates().copy()
-    tracks_master.insert(0, 'TRACK_ID', range(1, len(tracks_master) + 1))
+    # GENRES Table
+    genres_df = pd.DataFrame(df['genre'].unique(), columns=['Genre_Name'])
+    genres_df.to_csv("data/genres.csv", index=False)
 
-    tracks_master[['TRACK_ID', 'track_name']].to_csv("data/tracks_information.csv", index=False)
+    # ARTISTS Table
+    artists_df = pd.DataFrame(df['artist_name'].unique(), columns=['Artist_Name'])
+    artists_df.insert(0, 'Artist_ID', range(1, len(artists_df) + 1))
+    artists_df.to_csv("data/artists.csv", index=False)
 
-    df = df.merge(tracks_master, on=['track_name', 'artist_name'])
+    # Merge Artist_ID back to main df to use as a Foreign Key
+    df = df.merge(artists_df, left_on='artist_name', right_on='Artist_Name')
 
-    artists_df = df[['TRACK_ID', 'artist_name']].copy()
-    artists_df.insert(0, 'ARTIST_ID', range(1, len(artists_df) + 1))
-    artists_df.to_csv("data/artists_information.csv", index=False)
+    # TRACKS Table
 
-    music_df = df[['TRACK_ID']].copy()
-    music_df.insert(0, 'MUSIC_ID', range(1, len(music_df) + 1))
-    music_df.to_csv("data/musicallity_information.csv", index=False)
+    tracks_df = df[['track_name', 'Artist_ID']].drop_duplicates().reset_index(drop=True)
+    tracks_df.insert(0, 'Track_ID', range(1, len(tracks_df) + 1))
+    tracks_df.rename(columns={'track_name': 'Track_Name'}, inplace=True)
+    tracks_df.to_csv("data/tracks.csv", index=False)
 
-    stats_df = df[['TRACK_ID', 'popularity', 'instrumentalness']].copy()
-    stats_df.insert(0, 'STATS_ID', range(1, len(stats_df) + 1))
-    stats_df.to_csv("data/statistics_information.csv", index=False)
 
-    rhythm_df = df[['TRACK_ID']].copy()
-    rhythm_df.insert(0, 'RHYTHM_ID', range(1, len(rhythm_df) + 1))
-    rhythm_df.to_csv("data/rhythm_information.csv", index=False)
+    df = df.merge(tracks_df, left_on=['track_name', 'Artist_ID'], right_on=['Track_Name', 'Artist_ID'])
 
-    tempo_df = rhythm_df[['RHYTHM_ID']].copy()
-    tempo_df['tempo'] = df['tempo']
-    tempo_df['time_signature'] = df['time_signature']
-    tempo_df.insert(0, 'TEMPO_ID', range(1, len(tempo_df) + 1))
-    tempo_df.to_csv("data/tempo_information.csv", index=False)
+    # PRODUCTION Table
+    production_df = df[['Track_ID', 'Artist_ID', 'genre', 'key', 'duration_ms', 'tempo']].copy()
+    production_df.rename(columns={
+        'genre': 'Genre_Name',
+        'key': 'Song_Key',
+        'duration_ms': 'Duration_Ms',
+        'tempo': 'Tempo'
+    }, inplace=True)
 
-    prod_df = stats_df[['STATS_ID']].copy()
-    prod_df['genre'] = df['genre']
-    prod_df['duration_ms'] = df['duration_ms']
-    prod_df.insert(0, 'PROD_ID', range(1, len(prod_df) + 1))
-    prod_df.to_csv("data/production_information.csv", index=False)
-    
-    listen_df = stats_df[['STATS_ID']].copy()
-    listen_df.insert(0, 'LISTEN_ID', range(1, len(listen_df) + 1))
-    listen_df.to_csv("data/listenability_information.csv", index=False)
+    production_df = production_df.drop_duplicates(subset=['Track_ID', 'Artist_ID'])
+    production_df.to_csv("data/production.csv", index=False)
 
-    loudness_df = df[["loudness","acousticness"]]
-    dancebility_df = df[["danceability","liveness","valence"]]
-    keys_df = df[["key","mode"]]
-    loudness_df.to_csv("data/loudness_information.csv", index=False)
-    dancebility_df.to_csv("data/dancebility_information.csv", index=False)
-    keys_df.to_csv("data/keys_information.csv", index=False)
-    
+    # SONGATTRIBUTES Table
+    songattributes_df = df[['Track_ID', 'Artist_ID', 'loudness', 'acousticness', 'danceability', 'liveness', 'valence', 'popularity']].copy()
+    songattributes_df.rename(columns={
+        'loudness': 'Loudness',
+        'acousticness': 'Acousticness',
+        'danceability': 'Danceability',
+        'liveness': 'Liveliness',
+        'valence': 'Valence',
+        'popularity': 'Popularity_Stat'
+    }, inplace=True)
+
+
+    songattributes_df = songattributes_df.drop_duplicates(subset=['Track_ID', 'Artist_ID'])
+    songattributes_df.to_csv("data/songattributes.csv", index=False)
+
 
 def close_mariadb():
     cursor.close()
@@ -108,8 +112,7 @@ def run_db_operations():
     create_db()
     csv_create_tables()
     close_mariadb()
-    
+
 
 if __name__ == "__main__":
     run_db_operations()
-
