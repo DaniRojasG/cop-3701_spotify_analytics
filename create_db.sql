@@ -3,7 +3,7 @@ CREATE DATABASE IF NOT EXISTS SpotifyAnalytics;
 USE SpotifyAnalytics;
 
 CREATE TABLE GENRES (
-    Genre_Name VARCHAR(255)
+    Genre_Name VARCHAR(255) PRIMARY KEY
     );
 
 CREATE TABLE ARTISTS (
