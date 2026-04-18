@@ -53,7 +53,7 @@ query2 = "SELECT COUNT(Track_ID) AS Song_Count FROM SONGATTRIBUTES WHERE Danceab
 
 query3 = "SELECT COUNT(Artist_ID) AS Artist_Count FROM ARTISTS WHERE Artist_Name LIKE %s;"
 
-query4 = "SELECT COUNT(Track_ID) AS Song_Count FROM PRODUCTION WHERE KEY = %s;"
+query4 = "SELECT COUNT(Track_ID) AS Song_Count FROM PRODUCTION WHERE Song_Key = %s;"
 
 query5 = "SELECT t.Track_Name, s.Valence FROM TRACKS t JOIN SONGATTRIBUTES s ON t.Track_ID = s.Track_ID WHERE s.Valence < %s;"
 
