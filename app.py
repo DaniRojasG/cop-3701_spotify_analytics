@@ -6,7 +6,7 @@ import pandas as pd
 DB_CONFIG = {
     "host": "localhost",
     "user": "root",
-    "password": "GR3yFryJh4ln()",
+    "password": "MoonLitAzure",
     "database": "SpotifyAnalytics",
     "port": 3306,
 }
